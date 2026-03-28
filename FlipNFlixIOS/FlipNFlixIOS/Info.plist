@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>TMDBAccessToken</key>
+	<string>eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTliZmM0Njk1Y2RhMDA1MmM0YWQ5NGMxZDcwYWMwMSIsIm5iZiI6MTcxODAyNjk0NC41NTYsInN1YiI6IjY2NjcwMmMwODAyN2M0OWNmYjk5ZjcwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Nh-qdZjXSZCSaPPoP1gIBfHz-d5BPxjD9L6kLDk_gzI</string>
+</dict>
+</plist>
