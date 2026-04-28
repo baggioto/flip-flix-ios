@@ -1,0 +1,84 @@
+# ===========================
+# macOS
+# ===========================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ===========================
+# Xcode - User-specific files
+# ===========================
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+
+# Xcode - Build output
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Xcode - Other
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+timeline.xctimeline
+playground.xcworkspace
+
+# ===========================
+# Swift Package Manager
+# ===========================
+.build/
+.swiftpm/
+Package.resolved
+.netrc
+
+# ===========================
+# CocoaPods
+# ===========================
+Pods/
+# Para projetos com Pods, normalmente recomenda-se versionar o Podfile.lock
+# Se NÃO quiser versionar, descomente a linha abaixo:
+# Podfile.lock
+
+# ===========================
+# Carthage
+# ===========================
+Carthage/Build/
+Carthage/Checkouts
+
+# ===========================
+# fastlane
+# ===========================
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ===========================
+# Editores / IDEs
+# ===========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===========================
+# Variáveis de ambiente / Segredos
+# ===========================
+.env
+.env.local
+*.pem
+*.p12
+secrets.plist
