@@ -37,6 +37,42 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.errorMessage, HomeTestError.failed.errorDescription)
         XCTAssertFalse(viewModel.isEmpty)
     }
+
+    func testRetryWhenRefreshFailsPreservesExistingSectionsAndPublishesError() async {
+        let popularMovie = makeHomeMediaItem(id: 1, title: "Popular Movie")
+        let refreshedMovie = makeHomeMediaItem(id: 2, title: "Refreshed Movie")
+        let service = SequencedHomeMovieService(
+            popularResults: [
+                .success([popularMovie]),
+                .failure(.failed),
+                .success([refreshedMovie])
+            ],
+            trendingResults: [
+                .success([]),
+                .failure(.failed),
+                .success([])
+            ],
+            topRatedResults: [
+                .success([]),
+                .failure(.failed),
+                .success([])
+            ]
+        )
+        let viewModel = HomeViewModel(service: service)
+
+        await viewModel.loadIfNeeded()
+        let loadedSections = viewModel.sections
+        await viewModel.retry()
+
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertEqual(viewModel.sections, loadedSections)
+        XCTAssertEqual(viewModel.errorMessage, HomeTestError.failed.errorDescription)
+
+        await viewModel.retry()
+
+        XCTAssertEqual(viewModel.sections[0].items, [refreshedMovie])
+        XCTAssertNil(viewModel.errorMessage)
+    }
 }
 
 private struct MockHomeMovieService: MovieServiceProtocol {
@@ -87,6 +123,56 @@ private enum HomeTestError: LocalizedError, Sendable {
 
     var errorDescription: String? {
         "Mock service failure"
+    }
+}
+
+private final class SequencedHomeMovieService: MovieServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var popularResults: [Result<[MediaItem], HomeTestError>]
+    private var trendingResults: [Result<[MediaItem], HomeTestError>]
+    private var topRatedResults: [Result<[MediaItem], HomeTestError>]
+
+    init(
+        popularResults: [Result<[MediaItem], HomeTestError>],
+        trendingResults: [Result<[MediaItem], HomeTestError>],
+        topRatedResults: [Result<[MediaItem], HomeTestError>]
+    ) {
+        self.popularResults = popularResults
+        self.trendingResults = trendingResults
+        self.topRatedResults = topRatedResults
+    }
+
+    func fetchPopularMovies() async throws -> [MediaItem] {
+        try nextResult(from: \.popularResults)
+    }
+
+    func fetchTrendingMedia() async throws -> [MediaItem] {
+        try nextResult(from: \.trendingResults)
+    }
+
+    func fetchTopRatedMovies() async throws -> [MediaItem] {
+        try nextResult(from: \.topRatedResults)
+    }
+
+    func fetchMediaDetail(id: Int, mediaType: MediaType) async throws -> MediaItem {
+        makeHomeMediaItem(id: id, mediaType: mediaType, title: "Detail")
+    }
+
+    private func nextResult(
+        from keyPath: ReferenceWritableKeyPath<SequencedHomeMovieService, [Result<[MediaItem], HomeTestError>]>
+    ) throws -> [MediaItem] {
+        let result = lock.withLock {
+            self[keyPath: keyPath].isEmpty ? nil : self[keyPath: keyPath].removeFirst()
+        }
+
+        switch result {
+        case let .success(items):
+            return items
+        case let .failure(error):
+            throw error
+        case .none:
+            return []
+        }
     }
 }
 

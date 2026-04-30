@@ -18,6 +18,10 @@ final class HomeViewModel: ObservableObject {
         isLoading == false && errorMessage == nil && sections.allSatisfy(\.items.isEmpty)
     }
 
+    var isRefreshing: Bool {
+        isLoading && sections.isEmpty == false
+    }
+
     func loadIfNeeded() async {
         guard hasLoaded == false else { return }
         await loadSections()
@@ -49,7 +53,10 @@ final class HomeViewModel: ObservableObject {
 
             hasLoaded = true
         } catch {
-            sections = []
+            if sections.isEmpty {
+                sections = []
+            }
+
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
 
