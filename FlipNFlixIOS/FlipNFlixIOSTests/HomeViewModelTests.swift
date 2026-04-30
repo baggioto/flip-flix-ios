@@ -2,13 +2,13 @@
 import XCTest
 
 @MainActor
-final class FlipNFlixIOSTests: XCTestCase {
+final class HomeViewModelTests: XCTestCase {
     func testLoadIfNeededWhenServiceSucceedsPublishesExpectedSections() async {
-        let popularMovie = makeMediaItem(id: 1, title: "Popular Movie")
-        let trendingShow = makeMediaItem(id: 2, mediaType: .tv, title: "Trending Show")
-        let topRatedMovie = makeMediaItem(id: 3, title: "Top Rated Movie")
+        let popularMovie = makeHomeMediaItem(id: 1, title: "Popular Movie")
+        let trendingShow = makeHomeMediaItem(id: 2, mediaType: .tv, title: "Trending Show")
+        let topRatedMovie = makeHomeMediaItem(id: 3, title: "Top Rated Movie")
 
-        let service = MockMovieService(
+        let service = MockHomeMovieService(
             popularMovies: [popularMovie],
             trendingMedia: [trendingShow],
             topRatedMovies: [topRatedMovie]
@@ -27,29 +27,29 @@ final class FlipNFlixIOSTests: XCTestCase {
     }
 
     func testRetryWhenServiceFailsClearsSectionsAndPublishesError() async {
-        let service = MockMovieService(error: .failed)
+        let service = MockHomeMovieService(error: .failed)
         let viewModel = HomeViewModel(service: service)
 
         await viewModel.retry()
 
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertTrue(viewModel.sections.isEmpty)
-        XCTAssertEqual(viewModel.errorMessage, TestError.failed.errorDescription)
+        XCTAssertEqual(viewModel.errorMessage, HomeTestError.failed.errorDescription)
         XCTAssertFalse(viewModel.isEmpty)
     }
 }
 
-private struct MockMovieService: MovieServiceProtocol {
+private struct MockHomeMovieService: MovieServiceProtocol {
     let popularMovies: [MediaItem]
     let trendingMedia: [MediaItem]
     let topRatedMovies: [MediaItem]
-    let error: TestError?
+    let error: HomeTestError?
 
     init(
         popularMovies: [MediaItem] = [],
         trendingMedia: [MediaItem] = [],
         topRatedMovies: [MediaItem] = [],
-        error: TestError? = nil
+        error: HomeTestError? = nil
     ) {
         self.popularMovies = popularMovies
         self.trendingMedia = trendingMedia
@@ -78,11 +78,11 @@ private struct MockMovieService: MovieServiceProtocol {
         return popularMovies.first { $0.id == id }
             ?? trendingMedia.first { $0.id == id }
             ?? topRatedMovies.first { $0.id == id }
-            ?? makeMediaItem(id: id, mediaType: mediaType, title: "Detail")
+            ?? makeHomeMediaItem(id: id, mediaType: mediaType, title: "Detail")
     }
 }
 
-private enum TestError: LocalizedError, Sendable {
+private enum HomeTestError: LocalizedError, Sendable {
     case failed
 
     var errorDescription: String? {
@@ -90,7 +90,7 @@ private enum TestError: LocalizedError, Sendable {
     }
 }
 
-private func makeMediaItem(
+private func makeHomeMediaItem(
     id: Int,
     mediaType: MediaType = .movie,
     title: String
