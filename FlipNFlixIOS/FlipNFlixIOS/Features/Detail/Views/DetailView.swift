@@ -15,6 +15,8 @@ struct DetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     titleBlock
                     metadata
+                    loadingIndicator
+                    errorBanner
                     overview
                 }
                 .padding(.horizontal, 20)
@@ -23,6 +25,9 @@ struct DetailView: View {
         }
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadIfNeeded()
+        }
     }
 
     private var posterImage: some View {
@@ -69,6 +74,35 @@ struct DetailView: View {
             MetadataPill(systemImage: "play.rectangle", text: viewModel.mediaTypeText)
         }
         .font(.caption.weight(.semibold))
+    }
+
+    @ViewBuilder
+    private var loadingIndicator: some View {
+        if viewModel.isLoading {
+            ProgressView()
+                .controlSize(.small)
+        }
+    }
+
+    @ViewBuilder
+    private var errorBanner: some View {
+        if let errorMessage = viewModel.errorMessage {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Unable to refresh details", systemImage: "exclamationmark.triangle")
+                    .font(.subheadline.weight(.semibold))
+
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Button("Try Again") {
+                    Task { await viewModel.retry() }
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(12)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        }
     }
 
     private var overview: some View {
@@ -135,7 +169,8 @@ private extension MediaItem {
                     posterPath: "/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
                     backdropPath: "/yDHYTfA3R0jFYba16jBB1ef8oIt.jpg",
                     releaseDate: "2026-03-14"
-                )
+                ),
+                service: PreviewMovieService()
             )
         )
     }

@@ -13,7 +13,10 @@ struct FlipNFlixIOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: dependencies.makeHomeViewModel())
+            HomeView(
+                viewModel: dependencies.makeHomeViewModel(),
+                makeDetailViewModel: dependencies.makeDetailViewModel(item:)
+            )
         }
     }
 }

@@ -4,6 +4,8 @@ enum APIEndpoint: Equatable, Sendable {
     case popularMovies
     case trending
     case topRatedMovies
+    case movieDetail(id: Int)
+    case tvDetail(id: Int)
 
     nonisolated var path: String {
         switch self {
@@ -13,6 +15,10 @@ enum APIEndpoint: Equatable, Sendable {
             return "/trending/all/week"
         case .topRatedMovies:
             return "/movie/top_rated"
+        case let .movieDetail(id):
+            return "/movie/\(id)"
+        case let .tvDetail(id):
+            return "/tv/\(id)"
         }
     }
 

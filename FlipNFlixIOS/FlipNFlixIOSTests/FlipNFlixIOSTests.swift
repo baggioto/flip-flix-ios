@@ -71,6 +71,15 @@ private struct MockMovieService: MovieServiceProtocol {
         if let error { throw error }
         return topRatedMovies
     }
+
+    func fetchMediaDetail(id: Int, mediaType: MediaType) async throws -> MediaItem {
+        if let error { throw error }
+
+        return popularMovies.first { $0.id == id }
+            ?? trendingMedia.first { $0.id == id }
+            ?? topRatedMovies.first { $0.id == id }
+            ?? makeMediaItem(id: id, mediaType: mediaType, title: "Detail")
+    }
 }
 
 private enum TestError: LocalizedError, Sendable {

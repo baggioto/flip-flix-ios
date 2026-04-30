@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MediaCarouselView: View {
     let section: MediaSection
+    let detailViewModelFactory: DetailViewModelFactory
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,7 +14,7 @@ struct MediaCarouselView: View {
                 LazyHStack(alignment: .top, spacing: 14) {
                     ForEach(section.items) { item in
                         NavigationLink {
-                            DetailView(viewModel: DetailViewModel(item: item))
+                            DetailView(viewModel: detailViewModelFactory(item))
                         } label: {
                             MediaPosterCard(item: item)
                                 .equatable()

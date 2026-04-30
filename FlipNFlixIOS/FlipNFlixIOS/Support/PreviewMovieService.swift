@@ -10,6 +10,10 @@ struct PreviewMovieService: MovieServiceProtocol {
     func fetchTopRatedMovies() async throws -> [MediaItem] {
         []
     }
+
+    func fetchMediaDetail(id: Int, mediaType: MediaType) async throws -> MediaItem {
+        MediaItem.previewItems.first { $0.id == id } ?? MediaItem.previewItems[0]
+    }
 }
 
 private extension MediaItem {

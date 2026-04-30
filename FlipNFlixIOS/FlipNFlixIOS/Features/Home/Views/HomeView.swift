@@ -2,9 +2,14 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel: HomeViewModel
+    private let detailViewModelFactory: DetailViewModelFactory
 
-    init(viewModel: HomeViewModel) {
+    init(
+        viewModel: HomeViewModel,
+        makeDetailViewModel: @escaping @MainActor @Sendable (MediaItem) -> DetailViewModel
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.detailViewModelFactory = DetailViewModelFactory(makeDetailViewModel)
     }
 
     var body: some View {
@@ -38,7 +43,10 @@ struct HomeView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 28) {
                     ForEach(viewModel.sections) { section in
-                        MediaCarouselView(section: section)
+                        MediaCarouselView(
+                            section: section,
+                            detailViewModelFactory: detailViewModelFactory
+                        )
                     }
                 }
                 .padding(.vertical, 16)
@@ -47,6 +55,19 @@ struct HomeView: View {
                 await viewModel.retry()
             }
         }
+    }
+}
+
+struct DetailViewModelFactory: Sendable {
+    private let makeDetailViewModel: @MainActor @Sendable (MediaItem) -> DetailViewModel
+
+    init(_ makeDetailViewModel: @escaping @MainActor @Sendable (MediaItem) -> DetailViewModel) {
+        self.makeDetailViewModel = makeDetailViewModel
+    }
+
+    @MainActor
+    func callAsFunction(_ item: MediaItem) -> DetailViewModel {
+        makeDetailViewModel(item)
     }
 }
 

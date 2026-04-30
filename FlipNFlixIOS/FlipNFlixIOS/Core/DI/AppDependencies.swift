@@ -18,4 +18,9 @@ struct AppDependencies {
     func makeHomeViewModel() -> HomeViewModel {
         HomeViewModel(service: movieService)
     }
+
+    @MainActor
+    func makeDetailViewModel(item: MediaItem) -> DetailViewModel {
+        DetailViewModel(item: item, service: movieService)
+    }
 }
