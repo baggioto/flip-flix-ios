@@ -1,35 +1,99 @@
-//
-//  FlipNFlixIOSTests.swift
-//  FlipNFlixIOSTests
-//
-//  Created by Felipe Baggioto Przybylski   on 27/03/26.
-//
-
+@testable import FlipNFlixIOS
 import XCTest
 
+@MainActor
 final class FlipNFlixIOSTests: XCTestCase {
+    func testLoadIfNeededWhenServiceSucceedsPublishesExpectedSections() async {
+        let popularMovie = makeMediaItem(id: 1, title: "Popular Movie")
+        let trendingShow = makeMediaItem(id: 2, mediaType: .tv, title: "Trending Show")
+        let topRatedMovie = makeMediaItem(id: 3, title: "Top Rated Movie")
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        let service = MockMovieService(
+            popularMovies: [popularMovie],
+            trendingMedia: [trendingShow],
+            topRatedMovies: [topRatedMovie]
+        )
+        let viewModel = HomeViewModel(service: service)
+
+        await viewModel.loadIfNeeded()
+
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.isEmpty)
+        XCTAssertEqual(viewModel.sections.map(\.title), ["Popular", "Trending", "Top Rated"])
+        XCTAssertEqual(viewModel.sections[0].items, [popularMovie])
+        XCTAssertEqual(viewModel.sections[1].items, [trendingShow])
+        XCTAssertEqual(viewModel.sections[2].items, [topRatedMovie])
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testRetryWhenServiceFailsClearsSectionsAndPublishesError() async {
+        let service = MockMovieService(error: .failed)
+        let viewModel = HomeViewModel(service: service)
+
+        await viewModel.retry()
+
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertTrue(viewModel.sections.isEmpty)
+        XCTAssertEqual(viewModel.errorMessage, TestError.failed.errorDescription)
+        XCTAssertFalse(viewModel.isEmpty)
+    }
+}
+
+private struct MockMovieService: MovieServiceProtocol {
+    let popularMovies: [MediaItem]
+    let trendingMedia: [MediaItem]
+    let topRatedMovies: [MediaItem]
+    let error: TestError?
+
+    init(
+        popularMovies: [MediaItem] = [],
+        trendingMedia: [MediaItem] = [],
+        topRatedMovies: [MediaItem] = [],
+        error: TestError? = nil
+    ) {
+        self.popularMovies = popularMovies
+        self.trendingMedia = trendingMedia
+        self.topRatedMovies = topRatedMovies
+        self.error = error
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func fetchPopularMovies() async throws -> [MediaItem] {
+        if let error { throw error }
+        return popularMovies
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
-        }
+    func fetchTrendingMedia() async throws -> [MediaItem] {
+        if let error { throw error }
+        return trendingMedia
     }
 
+    func fetchTopRatedMovies() async throws -> [MediaItem] {
+        if let error { throw error }
+        return topRatedMovies
+    }
+}
+
+private enum TestError: LocalizedError, Sendable {
+    case failed
+
+    var errorDescription: String? {
+        "Mock service failure"
+    }
+}
+
+private func makeMediaItem(
+    id: Int,
+    mediaType: MediaType = .movie,
+    title: String
+) -> MediaItem {
+    MediaItem(
+        id: id,
+        mediaType: mediaType,
+        title: title,
+        overview: "Overview for \(title)",
+        voteAverage: 8.0,
+        posterPath: nil,
+        backdropPath: nil,
+        releaseDate: "2026-01-01"
+    )
 }
