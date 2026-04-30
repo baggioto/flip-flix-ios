@@ -40,6 +40,36 @@ final class DetailViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
+    func testReleaseDateTextFormatsAPIDateForDisplay() {
+        let item = makeDetailItem(id: 1, title: "Dated Title", releaseDate: "2026-03-14")
+        let viewModel = DetailViewModel(
+            item: item,
+            service: MockDetailMovieService(results: [])
+        )
+
+        XCTAssertEqual(viewModel.releaseDateText, "Mar 14, 2026")
+    }
+
+    func testReleaseDateTextWhenDateIsMissingReturnsUnknown() {
+        let item = makeDetailItem(id: 1, title: "Missing Date", releaseDate: nil)
+        let viewModel = DetailViewModel(
+            item: item,
+            service: MockDetailMovieService(results: [])
+        )
+
+        XCTAssertEqual(viewModel.releaseDateText, "Unknown")
+    }
+
+    func testReleaseDateTextWhenDateIsInvalidReturnsUnknown() {
+        let item = makeDetailItem(id: 1, title: "Invalid Date", releaseDate: "not-a-date")
+        let viewModel = DetailViewModel(
+            item: item,
+            service: MockDetailMovieService(results: [])
+        )
+
+        XCTAssertEqual(viewModel.releaseDateText, "Unknown")
+    }
+
     func testLoadIfNeededWhenServiceFailsPreservesInitialItemAndPublishesError() async {
         let initialItem = makeDetailItem(id: 1, title: "Initial Title")
         let viewModel = DetailViewModel(
@@ -125,7 +155,8 @@ private func makeDetailItem(
     mediaType: MediaType = .movie,
     title: String,
     overview: String = "Overview",
-    voteAverage: Double = 8.0
+    voteAverage: Double = 8.0,
+    releaseDate: String? = "2026-01-01"
 ) -> MediaItem {
     MediaItem(
         id: id,
@@ -135,6 +166,6 @@ private func makeDetailItem(
         voteAverage: voteAverage,
         posterPath: nil,
         backdropPath: nil,
-        releaseDate: "2026-01-01"
+        releaseDate: releaseDate
     )
 }
