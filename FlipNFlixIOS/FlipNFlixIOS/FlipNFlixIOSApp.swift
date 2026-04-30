@@ -11,7 +11,7 @@ import SwiftUI
 struct FlipNFlixIOSApp: App {
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel(service: MovieService()))
+            HomeView(viewModel: HomeViewModel(service: PreviewMovieService()))
         }
     }
 }
