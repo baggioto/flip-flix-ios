@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct FlipNFlixIOSApp: App {
+    private let dependencies = AppDependencies.live
+
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel(service: MovieService()))
+            HomeView(viewModel: dependencies.makeHomeViewModel())
         }
     }
 }
