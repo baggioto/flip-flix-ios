@@ -20,23 +20,33 @@ final class HomeViewModel: ObservableObject {
 
     func loadIfNeeded() async {
         guard hasLoaded == false else { return }
-        await loadPopularMovies()
+        await loadSections()
     }
 
     func retry() async {
         hasLoaded = false
-        await loadPopularMovies()
+        await loadSections()
     }
 
-    private func loadPopularMovies() async {
+    private func loadSections() async {
         isLoading = true
         errorMessage = nil
 
         do {
-            let popularMovies = try await service.fetchPopularMovies()
-            sections = [
-                MediaSection(title: "Popular", items: popularMovies)
+            async let popularMovies = service.fetchPopularMovies()
+            async let trendingMedia = service.fetchTrendingMedia()
+            async let topRatedMovies = service.fetchTopRatedMovies()
+
+            let loadedSections = try await [
+                MediaSection(title: "Popular", items: popularMovies),
+                MediaSection(title: "Trending", items: trendingMedia),
+                MediaSection(title: "Top Rated", items: topRatedMovies)
             ]
+
+            if sections != loadedSections {
+                sections = loadedSections
+            }
+
             hasLoaded = true
         } catch {
             sections = []

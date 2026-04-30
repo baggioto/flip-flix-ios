@@ -31,7 +31,7 @@ struct DetailView: View {
             case let .success(image):
                 image
                     .resizable()
-                    .scaledToFill()
+                    .scaledToFit()
             case .failure:
                 DetailImagePlaceholder()
             case .empty:
@@ -45,7 +45,6 @@ struct DetailView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 320)
         .clipped()
         .accessibilityHidden(true)
     }
@@ -108,6 +107,7 @@ private struct DetailImagePlaceholder: View {
                     .font(.largeTitle)
                     .foregroundStyle(.secondary)
             }
+            .frame(height: 320)
     }
 }
 
@@ -119,5 +119,24 @@ private extension MediaItem {
 
         guard let posterPath, posterPath.isEmpty == false else { return nil }
         return URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+    }
+}
+
+#Preview {
+    NavigationStack {
+        DetailView(
+            viewModel: DetailViewModel(
+                item: MediaItem(
+                    id: 1,
+                    mediaType: .movie,
+                    title: "Midnight Signal",
+                    overview: "A burned-out engineer discovers a broadcast from tomorrow and has one night to prevent a citywide blackout.",
+                    voteAverage: 8.2,
+                    posterPath: "/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
+                    backdropPath: "/yDHYTfA3R0jFYba16jBB1ef8oIt.jpg",
+                    releaseDate: "2026-03-14"
+                )
+            )
+        )
     }
 }
