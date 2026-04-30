@@ -16,15 +16,11 @@ struct MediaPosterCard: View, Equatable {
                         .resizable()
                         .scaledToFill()
                 case .failure:
-                    PosterPlaceholder()
+                    MediaImagePlaceholder(style: .poster, state: .failed)
                 case .empty:
-                    ZStack {
-                        PosterPlaceholder()
-                        ProgressView()
-                            .tint(.white)
-                    }
+                    MediaImagePlaceholder(style: .poster, state: .loading)
                 @unknown default:
-                    PosterPlaceholder()
+                    MediaImagePlaceholder(style: .poster)
                 }
             }
             .frame(width: 132, height: 198)
@@ -42,21 +38,8 @@ struct MediaPosterCard: View, Equatable {
     }
 }
 
-private struct PosterPlaceholder: View {
-    var body: some View {
-        Rectangle()
-            .fill(.gray.opacity(0.25))
-            .overlay {
-                Image(systemName: "film")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-            }
-    }
-}
-
 private extension MediaItem {
     var posterURL: URL? {
-        guard let posterPath, posterPath.isEmpty == false else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+        ImageURLBuilder().url(for: posterPath, size: .poster)
     }
 }

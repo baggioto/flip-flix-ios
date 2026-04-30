@@ -38,15 +38,14 @@ struct DetailView: View {
                     .resizable()
                     .scaledToFit()
             case .failure:
-                DetailImagePlaceholder()
+                MediaImagePlaceholder(style: .backdrop, state: .failed)
+                    .frame(height: 320)
             case .empty:
-                ZStack {
-                    DetailImagePlaceholder()
-                    ProgressView()
-                        .tint(.white)
-                }
+                MediaImagePlaceholder(style: .backdrop, state: .loading)
+                    .frame(height: 320)
             @unknown default:
-                DetailImagePlaceholder()
+                MediaImagePlaceholder(style: .backdrop)
+                    .frame(height: 320)
             }
         }
         .frame(maxWidth: .infinity)
@@ -132,27 +131,15 @@ private struct MetadataPill: View {
     }
 }
 
-private struct DetailImagePlaceholder: View {
-    var body: some View {
-        Rectangle()
-            .fill(.gray.opacity(0.25))
-            .overlay {
-                Image(systemName: "film")
-                    .font(.largeTitle)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(height: 320)
-    }
-}
-
 private extension MediaItem {
     var detailImageURL: URL? {
-        if let backdropPath, backdropPath.isEmpty == false {
-            return URL(string: "https://image.tmdb.org/t/p/w780\(backdropPath)")
+        let imageURLBuilder = ImageURLBuilder()
+
+        if let backdropURL = imageURLBuilder.url(for: backdropPath, size: .backdrop) {
+            return backdropURL
         }
 
-        guard let posterPath, posterPath.isEmpty == false else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+        return imageURLBuilder.url(for: posterPath, size: .poster)
     }
 }
 
